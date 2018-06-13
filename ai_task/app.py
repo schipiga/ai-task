@@ -5,6 +5,6 @@ __all__ = [
 ]
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "hello world"
+app.config["SECRET_KEY"] = "Hello world!"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SQLALCHEMY_COMMIT_ON_TEARDOWN"] = True

@@ -2,7 +2,7 @@ import os
 import os.path as path
 import pickle
 
-from flask import jsonify, request
+from flask import abort, jsonify, request
 import pandas as ps
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -20,18 +20,69 @@ def greeting():
     return jsonify({"greeting": "Hello man!"})
 
 
-@app.route("/api/v1.0/users")
+@app.route("/api/v1.0/users", methods=["POST"])
 def new_user():
+
+    username = request.json.get("username")
+    password = request.json.get("password")
+
+    if username is None or password is None:
+        abort(400)  # missing arguments
+
+    if User.query.filter_by(username=username).first() is not None:
+        abort(400)  # existing user
+
     user = User(username="admin")
     user.hash_password("admin")
+
     db.session.add(user)
     db.session.commit()
+
     return jsonify({"username": user.username})
+
+
+def verify_user(username, password):
+
+    if not username or not password:
+        return None
+
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.verify_password(password):
+        return None
+
+    return user
+
+
+@app.route("/api/v1.0/token", methods=["POST"])
+def gen_token():
+
+    username = request.json.get("username")
+    password = request.json.get("password")
+
+    user = verify_user(username, password)
+    if not user:
+        abort(400)
+
+    token = user.generate_auth_token(600)
+    return jsonify({'token': token.decode('ascii'), 'duration': 600})
 
 
 @app.route("/api/v1.0/predict")
 def predict():
-    comment = request.args.get("comment")
+
+    token = request.json.get("token")
+
+    if not token:
+        abort(400)
+
+    user = User.verify_auth_token(token)
+    if not user:
+        abort(400)
+
+    comment = request.json.get("comment")
+    if not comment:
+        abort(400)
+
     test_text = ps.Series(comment)
     test_features = model["vectorizer"].transform(test_text)
 
@@ -40,7 +91,7 @@ def predict():
         result[name] = clsfr.predict_proba(test_features)[0][1]
 
     p = Predict(**result)
-    p.user_id = db.session.query(User).first().id
+    p.user_id = user.id
     db.session.add(p)
 
     m = db.session.query(Metric).first()
