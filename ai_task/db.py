@@ -20,6 +20,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
     password_hash = db.Column(db.String(64))
+    predicts = db.relationship("Predict")
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -43,6 +44,7 @@ class Predict(db.Model):
     threat = db.Column(db.Float)
     insult = db.Column(db.Float)
     identity_hate = db.Column(db.Float)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
 class Metric(db.Model):
     __tablename__ = "metrics"

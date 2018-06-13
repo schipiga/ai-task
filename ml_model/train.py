@@ -13,7 +13,7 @@ cur_dir = path.dirname(__file__)
 model_path = path.join(cur_dir, "model.reg")
 train_path = path.join(cur_dir, "train.csv")
 
-size = 1000
+size = 10000
 split = lambda seq: seq[:size] if size else seq
 
 class_names = [
@@ -49,6 +49,7 @@ vectorizer.fit(train_text)
 train_features = vectorizer.transform(train_text)
 
 scores = []
+classifiers = {}
 for class_name in class_names:
     train_target = split(train[class_name])
     classifier = LogisticRegression(solver="sag")
@@ -59,9 +60,11 @@ for class_name in class_names:
     print("CV score for class {} is {}".format(class_name, cv_score))
 
     classifier.fit(train_features, train_target)
+    classifiers[class_name] = classifier
 
 print("Total CV score is {}".format(np.mean(scores)))
 
-pickle.dump(classifier, open(model_path, "wb"))
+pickle.dump({"vectorizer": vectorizer, "classifiers": classifiers},
+            open(model_path, "wb"))
 
 print("Regression model is saved to '%s'" % model_path)
