@@ -1,10 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
-from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-
+from passlib.apps import custom_app_context as pwd_context
 
 from ai_task.app import app
+
 
 __all__ = [
     "db",
@@ -14,6 +14,7 @@ __all__ = [
 ]
 
 db = SQLAlchemy(app)
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -45,6 +46,7 @@ class User(db.Model):
         user = User.query.get(data['id'])
         return user
 
+
 class Predict(db.Model):
     __tablename__ = "predicts"
 
@@ -57,6 +59,7 @@ class Predict(db.Model):
     insult = db.Column(db.Float)
     identity_hate = db.Column(db.Float)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
 
 class Metric(db.Model):
     __tablename__ = "metrics"

@@ -1,5 +1,6 @@
 from flask import Flask
 
+
 __all__ = [
     "app",
 ]

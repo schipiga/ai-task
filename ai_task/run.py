@@ -3,13 +3,13 @@ import os.path as path
 import pickle
 
 from flask import abort, jsonify, request
-import pandas as ps
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_union
+import pandas as ps
 
 from ai_task.app import app
 from ai_task.db import db, User, Predict, Metric
+
 
 model_path = path.join(path.dirname(__file__), "model.reg")
 model = pickle.load(open(model_path, "rb"))
@@ -64,7 +64,7 @@ def gen_token():
         abort(400)
 
     token = user.generate_auth_token(600)
-    return jsonify({'token': token.decode('ascii'), 'duration': 600})
+    return jsonify({"token": token.decode("ascii"), "duration": "600 sec"})
 
 
 @app.route("/api/v1.0/predict")
@@ -121,7 +121,7 @@ def metrics():
     return jsonify({
         "number of requests": m.num_of_requests,
         "average of toxic": m.avg_of_toxic,
-        "average of severe toxic": m.avg_of_severe_toxic,
+        "average of severe_toxic": m.avg_of_severe_toxic,
         "average of obscene": m.avg_of_obscene,
         "average of threat": m.avg_of_threat,
         "average of insult": m.avg_of_insult,
@@ -129,7 +129,7 @@ def metrics():
     })
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if not os.path.exists("db.sqlite"):
         db.create_all()
         m = Metric(num_of_requests=0,

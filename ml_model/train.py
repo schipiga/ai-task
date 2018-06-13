@@ -10,7 +10,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import make_union
 
 cur_dir = path.dirname(__file__)
-model_path = path.join(cur_dir, "model.reg")
+model_path = path.normpath(path.join(cur_dir, "../ai_task/model.reg"))
 train_path = path.join(cur_dir, "train.csv")
 
 size = 10000
