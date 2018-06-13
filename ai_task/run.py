@@ -99,6 +99,9 @@ def predict():
     m.num_of_requests += 1
     y = m.num_of_requests
     
+    # Yeah, during a time floating calculations error will accumulate, but it
+    # can be solved with background worker which will be periodically calculate
+    # precise values transparently for service.
     m.avg_of_toxic = (m.avg_of_toxic * x + p.toxic) / y
     m.avg_of_severe_toxic = (m.avg_of_severe_toxic * x + p.severe_toxic) / y
     m.avg_of_obscene = (m.avg_of_obscene * x + p.obscene) / y
