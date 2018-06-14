@@ -35,13 +35,7 @@ This is a test example how set up web service in order to detect negative publis
 - Create a tested user:
 
     ```
-    curl -i -X POST -H "Content-Type: application/json" -d '{"username":"admin","password":"admin"}' http://127.0.0.1:5000/api/v1.0/users
-
-    HTTP/1.0 200 OK
-    Content-Type: application/json
-    Content-Length: 26
-    Server: Werkzeug/0.14.1 Python/2.7.12
-    Date: Wed, 13 Jun 2018 21:17:23 GMT
+    curl -X POST -H "Content-Type: application/json" -d '{"username":"admin","password":"admin"}' http://127.0.0.1:5000/api/v1.0/users
 
     {
     "username": "admin"
@@ -51,13 +45,7 @@ This is a test example how set up web service in order to detect negative publis
 - Generate auth token for user:
 
     ```
-    curl -i -X POST -H "Content-Type: application/json" -d '{"username":"admin", "password":"admin"}' http://127.0.0.1:5000/api/v1.0/token
-
-    HTTP/1.0 200 OK
-    Content-Type: application/json
-    Content-Length: 160
-    Server: Werkzeug/0.14.1 Python/2.7.12
-    Date: Wed, 13 Jun 2018 21:12:39 GMT
+    curl -X POST -H "Content-Type: application/json" -d '{"username":"admin", "password":"admin"}' http://127.0.0.1:5000/api/v1.0/token
 
     {
     "duration": "600 sec",
@@ -68,13 +56,8 @@ This is a test example how set up web service in order to detect negative publis
 - Get prediction for some comment:
 
     ```
-    curl -i -X GET -H "Content-Type: application/json" -d '{"token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUyODkyNDkwMSwiaWF0IjoxNTI4OTI0MzAxfQ.eyJpZCI6MX0.DyqkMsK0rAduBULCT-J6ic0mg9GdUGIYRY9Nlky8ycs", "comment": "Piece of shit"}' http://127.0.0.1:5000/api/v1.0/predict
+    curl -X GET -H "Content-Type: application/json" -d '{"token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUyODkyNDkwMSwiaWF0IjoxNTI4OTI0MzAxfQ.eyJpZCI6MX0.DyqkMsK0rAduBULCT-J6ic0mg9GdUGIYRY9Nlky8ycs", "comment": "Piece of shit"}' http://127.0.0.1:5000/api/v1.0/predict
 
-    HTTP/1.0 200 OK
-    Content-Type: application/json
-    Content-Length: 219
-    Server: Werkzeug/0.14.1 Python/2.7.12
-    Date: Wed, 13 Jun 2018 21:11:56 GMT
 
     {
     "identity_hate": 0.018857607960989377,
@@ -89,13 +72,7 @@ This is a test example how set up web service in order to detect negative publis
 - Get common statistics:
 
     ```
-    curl -i -X GET -H "Content-Type: application/json" http://127.0.0.1:5000/api/v1.0/metrics
-
-    HTTP/1.0 200 OK
-    Content-Type: application/json
-    Content-Length: 314
-    Server: Werkzeug/0.14.1 Python/2.7.12
-    Date: Wed, 13 Jun 2018 21:18:09 GMT
+    curl http://127.0.0.1:5000/api/v1.0/metrics
 
     {
     "average of identity_hate": 0.027139532577608132,

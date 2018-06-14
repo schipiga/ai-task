@@ -115,6 +115,10 @@ def predict():
 @app.route("/api/v1.0/metrics")
 def metrics():
     m = db.session.query(Metric).first()
+
+    if not m.num_of_requests:
+        return jsonify({})
+
     return jsonify({
         "number of requests": m.num_of_requests,
         "average of toxic": m.sum_of_toxic / m.num_of_requests,
