@@ -43,18 +43,6 @@ def new_user():
     return jsonify({"username": user.username})
 
 
-def verify_user(username, password):
-
-    if not username or not password:
-        return None
-
-    user = User.query.filter_by(username=username).first()
-    if not user or not user.verify_password(password):
-        return None
-
-    return user
-
-
 @app.route("/api/v1.0/token", methods=["POST"])
 def gen_token():
 
@@ -86,18 +74,11 @@ def predict():
     if not comment:
         abort(400)
 
-    test_text = ps.Series(comment)
-    test_features = model["vectorizer"].transform(test_text)
-
-    result = {}
-    for name, clsfr in model["classifiers"].iteritems():
-        result[name] = clsfr.predict_proba(test_features)[0][1]
-
-    p = Predict(**result)
-    p.user_id = user.id
+    classification = classify_comment(comment)
+    p = Predict(comment=comment, user_id=user.id, **classification)
     db.session.add(p)
 
-    m = db.session.query(Metric).first()
+    m = Metric.query.first()
     m.num_of_requests += 1
     m.sum_of_toxic += p.toxic
     m.sum_of_severe_toxic += p.severe_toxic
@@ -109,12 +90,12 @@ def predict():
     db.session.add(m)
     db.session.commit()
 
-    return jsonify(result)
+    return jsonify(classification)
 
 
 @app.route("/api/v1.0/metrics")
 def metrics():
-    m = db.session.query(Metric).first()
+    m = Metric.query.first()
 
     if not m.num_of_requests:
         return jsonify({})
@@ -128,6 +109,28 @@ def metrics():
         "average of insult": m.sum_of_insult / m.num_of_requests,
         "average of identity_hate": m.sum_of_identity_hate / m.num_of_requests,
     })
+
+
+def classify_comment(comment):
+    test_text = ps.Series(comment)
+    test_features = model["vectorizer"].transform(test_text)
+
+    result = {}
+    for name, clsfr in model["classifiers"].iteritems():
+        result[name] = clsfr.predict_proba(test_features)[0][1]
+    return result
+
+
+def verify_user(username, password):
+
+    if not username or not password:
+        return None
+
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.verify_password(password):
+        return None
+
+    return user
 
 
 if __name__ == "__main__":

@@ -78,7 +78,7 @@ This is a test example how set up web service in order to detect negative publis
     "average of identity_hate": 0.027139532577608132,
     "average of insult": 0.36755172631288857,
     "average of obscene": 0.4450323144786138,
-    "average of severe toxic": 0.046490990816206376,
+    "average of severe_toxic": 0.046490990816206376,
     "average of threat": 0.006694763797418021,
     "average of toxic": 0.5178865250626457,
     "number of requests": 8

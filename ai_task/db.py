@@ -53,7 +53,7 @@ class Predict(db.Model):
     __tablename__ = "predicts"
 
     id = db.Column(db.Integer, primary_key=True)
-    comment = db.Column(db.Text)
+    comment = db.Column(db.Text, index=True)
     toxic = db.Column(db.Float)
     severe_toxic = db.Column(db.Float)
     obscene = db.Column(db.Float)
