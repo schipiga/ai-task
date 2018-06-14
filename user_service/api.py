@@ -39,8 +39,8 @@ def create_user():
     if db.User.query.filter_by(username=username).first():
         return reject("user already exists")
 
-    user = db.User(username="admin")
-    user.hash_password("admin")
+    user = db.User(username=username)
+    user.hash_password(password)
 
     db.db.session.add(user)
     db.db.session.commit()
