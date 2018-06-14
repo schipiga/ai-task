@@ -28,17 +28,43 @@ class User(db.Model):
     password_hash = db.Column(db.String(64), nullable=False)
 
     def hash_password(self, password):
+        """Hash password.
+
+        Args:
+            password (str): User password.
+        """
         self.password_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
+        """Verify password.
+
+        Args:
+            password (str): User password.
+        """
         return pwd_context.verify(password, self.password_hash)
 
     def generate_auth_token(self, expiration=600):
+        """Generate auth token.
+
+        Args:
+            expiration (int): TTL of token.
+        
+        Returns:
+            obj: token
+        """
         s = Serializer(CONF.secret_key, expires_in=expiration)
         return s.dumps({"id": self.id})
 
     @staticmethod
     def check_auth_token(token):
+        """Check auth token validity.
+
+        Args:
+            token (str): Auth token.
+
+        Returns:
+            User: Found user or None.
+        """
         s = Serializer(CONF.secret_key)
         try:
             data = s.loads(token)
@@ -51,7 +77,15 @@ class User(db.Model):
 
     @staticmethod
     def check_creds(username, password):
+        """Check auth credentials validity.
 
+        Args:
+            username (str): Name of user.
+            password (str): Password of user.
+
+        Returns:
+            User: Found user or None.
+        """
         if not username or not password:
             return None
 
@@ -63,6 +97,7 @@ class User(db.Model):
 
 
 def init_db():
+    """Initialize or use existing database."""
     if path.exists(CONF.db_path):
         print("Use existing database '%s'" % CONF.db_path)
         return

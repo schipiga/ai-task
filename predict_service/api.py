@@ -9,16 +9,31 @@ import predict_service.db as db
 import predict_service.services as ms
 
 
-classify = classifiers[CONF.classifier_name]
+V = "v1.0"
+classify = classifiers[CONF.classifier_name]  # function to classify comment
 
 
 def reject(error_message, code=400):
+    """Wrapper over flask helpers to return wrong response in JSON format.
+
+    Args:
+        error_message (str): Message explaining error type.
+        code (int): Status code of response.
+    """
     abort(make_response(jsonify({"error": error_message}), code))
 
 
-@app.route("/api/v1.0/predict")
+@app.route("/api/%s/predict" % V, methods=["POST"])
 def predict():
+    """Handler to process predict request.
+    
+    Request options:
+        - token: authentication token
+        - comment: comment for classification
 
+    Response data:
+        weights of categories
+    """
     token = request.json.get("token")
 
     if not token:
@@ -55,8 +70,13 @@ def predict():
     return jsonify(classification)
 
 
-@app.route("/api/v1.0/metrics")
+@app.route("/api/%s/metrics" % V)
 def metrics():
+    """Handler to process metrics request.
+    
+    Response data:
+        requests and predicts statistics
+    """
     m = db.Metric.query.first()
 
     if not m.num_of_requests:

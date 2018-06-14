@@ -58,7 +58,7 @@ class Metric(db.Model):
 
 
 def init_db():
-
+    """Initialize or use existing database."""
     if path.exists(CONF.db_path):
         print("Use existing database '%s'" % CONF.db_path)
         return

@@ -15,6 +15,15 @@ model = pickle.load(open(model_path, "rb"))
 
 
 def classify(comment):
+    """Classify comment using pretraing logistic regression model.
+
+    Args:
+        comment (str): Comment to classify.
+
+    Returns:
+        dict: Weights of categories `toxic`, `severe_toxic`, `obscene`,
+            `threat`, `insult`, `identity_hate`.
+    """
     test_text = pd.Series(comment)
     test_features = model["vectorizer"].transform(test_text)
 
