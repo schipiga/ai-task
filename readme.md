@@ -4,6 +4,7 @@ This is a test example how set up web service in order to detect negative publis
 
 ## Used technologies
 
+- **Ubuntu 16.04**
 - [python v2.7](https://www.python.org/)
 - [Flask](http://flask.pocoo.org/)
 - [SQLAlchemy](http://flask-sqlalchemy.pocoo.org/)
@@ -23,76 +24,156 @@ This is a test example how set up web service in order to detect negative publis
 
 ## How to launch
 
-- Launch flask server:
+- Launch user service:
 
     ```
-    python ai_task/run.py
+    python user_service/api.py
 
-    * Debug mode: on
+    * Running on http://127.0.0.1:5001/ (Press CTRL+C to quit)
+    ```
+
+- Launch predict service:
+
+    ```
+    python predict_service/api.py
+
     * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
     ```
 
-- Create a tested user:
+## Available API
+
+**User service:**
+
+- POST http://127.0.0.1:5001/api/v1.0/users - request to create user
 
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"username":"admin","password":"admin"}' http://127.0.0.1:5000/api/v1.0/users
+    Request options:
+        - username: name of user
+        - password: password of user
 
-    {
-    "username": "admin"
-    }
+    Response data:
+        - username: name of created user
     ```
 
-- Generate auth token for user:
+- POST http://127.0.0.1:5001/api/v1.0/tokens - request to create auth token
 
     ```
-    curl -X GET -H "Content-Type: application/json" -d '{"username":"admin", "password":"admin"}' http://127.0.0.1:5000/api/v1.0/token
+    Request options:
+        - username: name of user
+        - password: password of user
 
-    {
-    "duration": 86400,
-    "token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUyODkyNDk1OSwiaWF0IjoxNTI4OTI0MzU5fQ.eyJpZCI6MX0._ItAFuSfmxvBCI1tOVfwvkyHh9mMiKve3KTcDgcMio4"
-    }
+    Response data:
+        - token: generated auth token
+        - duration: duration of token validity
     ```
 
-- Get prediction for some comment:
+- GET http://127.0.0.1:5001/api/v1.0/tokens/check - request to check auth token
 
     ```
-    curl -X GET -H "Content-Type: application/json" -d '{"token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUyODkyNDkwMSwiaWF0IjoxNTI4OTI0MzAxfQ.eyJpZCI6MX0.DyqkMsK0rAduBULCT-J6ic0mg9GdUGIYRY9Nlky8ycs", "comment": "Piece of shit"}' http://127.0.0.1:5000/api/v1.0/predict
+    Request options:
+        - token: auth token to validate
 
-
-    {
-    "identity_hate": 0.018857607960989377,
-    "insult": 0.40115005492124134,
-    "obscene": 0.7203626425738092,
-    "severe_toxic": 0.10141147676486367,
-    "threat": 0.003417403735304951,
-    "toxic": 0.8793518598404059
-    }
+    Response data:
+        - username: name of user by token
     ```
+
+**Predict service:**
+
+- POST http://127.0.0.1:5000/api/v1.0/predict - request to classify comment
+
+    ```
+    Request options:
+        - token: authentication token
+        - comment: comment for classification
+
+    Response data:
+        weights of categories
+    ```
+
+- GET http://127.0.0.1:5000/api/v1.0/metrics - request to get metrics statistics
+
+    ```
+    Response data:
+        requests and predicts statistics
+    ```
+
+## How to use with curl
+
+- Create a user:
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{"username":"admin","password":"admin"}' http://127.0.0.1:5001/api/v1.0/users
+
+{
+  "username": "admin"
+}
+```
+
+- Create user auth token:
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{"username":"admin", "password":"admin"}' http://127.0.0.1:5001/api/v1.0/tokens
+
+{
+  "duration": 86400,
+  "token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUyOTA5MTIxNSwiaWF0IjoxNTI5MDA0ODE1fQ.eyJpZCI6MX0.dxgKhSJUqAvu5ri-qqFFuPuF4BAmxeYrBbu6T9-MQB0"
+}
+```
+
+- Predict a comment:
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{"token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUyOTA5MTIxNSwiaWF0IjoxNTI5MDA0ODE1fQ.eyJpZCI6MX0.dxgKhSJUqAvu5ri-qqFFuPuF4BAmxeYrBbu6T9-MQB0", "comment": "Piece of shit"}' http://127.0.0.1:5000/api/v1.0/predict
+
+{
+  "identity_hate": 0.018857023246636368,
+  "insult": 0.40114822196368416,
+  "obscene": 0.7203646861816834,
+  "severe_toxic": 0.1014080855134393,
+  "threat": 0.0034173789376567365,
+  "toxic": 0.8793470228886062
+}
+```
 
 - Get common statistics:
 
-    ```
-    curl http://127.0.0.1:5000/api/v1.0/metrics
+```
+curl http://127.0.0.1:5000/api/v1.0/metrics
 
-    {
-    "average of identity_hate": 0.027139532577608132,
-    "average of insult": 0.36755172631288857,
-    "average of obscene": 0.4450323144786138,
-    "average of severe_toxic": 0.046490990816206376,
-    "average of threat": 0.006694763797418021,
-    "average of toxic": 0.5178865250626457,
-    "number of requests": 8
-    }
-    ```
+{
+  "average of identity_hate": 0.018857023246636368,
+  "average of insult": 0.40114822196368416,
+  "average of obscene": 0.7203646861816834,
+  "average of severe_toxic": 0.1014080855134393,
+  "average of threat": 0.0034173789376567365,
+  "average of toxic": 0.8793470228886062,
+  "number of requests": 1
+}
+```
+
+## How to use existing examples
+
+- Launch script `python examples/usage.py`
+- Observe stdout results
+
+It provides `CLI` options:
+- `--username` - Name of created user. Default is `admin`.
+- `--password` - Password of created user. Default is `admin`.
+- `--comments-number` - Number of comments to send to predict service. Default is `100`.
 
 ## How to update trained model
 
-- Launch script: `python ml_model/train.py`
-- Restart flask server
+- Launch script `python ml_model/train_logistic_regression.py`
+- Wait for finishing
+
+It provides `CLI` options:
+- `--comments-number` - Number of comments which will be used for training. Default is `10000`. 
 
 ## What else can be added
 
 - Logging
+- Usage of [Flask-RESTful](https://flask-restful.readthedocs.io/en/latest/)
+- Usage of TTL cache for auth tokens in predict service
 - Migration to [tornado](http://www.tornadoweb.org/en/stable/) server
 - Documentation generating with [sphinx](http://www.sphinx-doc.org/en/master/)
 - Unit tests coverage

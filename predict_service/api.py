@@ -26,7 +26,7 @@ def reject(error_message, code=400):
 @app.route("/api/%s/predict" % V, methods=["POST"])
 def predict():
     """Handler to process predict request.
-    
+
     Request options:
         - token: authentication token
         - comment: comment for classification
@@ -73,7 +73,7 @@ def predict():
 @app.route("/api/%s/metrics" % V)
 def metrics():
     """Handler to process metrics request.
-    
+
     Response data:
         requests and predicts statistics
     """

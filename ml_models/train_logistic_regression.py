@@ -18,10 +18,10 @@ model_path = path.normpath(
 train_path = path.join(cur_dir, "train_data.csv")
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--size", type=int)
+parser.add_argument("--comments-number", type=int)
 args = parser.parse_args()
 
-size = args.username or 10000
+size = args.comments_number or 10000
 split = lambda seq: seq[:size] if size else seq
 
 class_names = [
