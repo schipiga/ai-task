@@ -45,7 +45,7 @@ This is a test example how set up web service in order to detect negative publis
 - Generate auth token for user:
 
     ```
-    curl -X POST -H "Content-Type: application/json" -d '{"username":"admin", "password":"admin"}' http://127.0.0.1:5000/api/v1.0/token
+    curl -X GET -H "Content-Type: application/json" -d '{"username":"admin", "password":"admin"}' http://127.0.0.1:5000/api/v1.0/token
 
     {
     "duration": 86400,

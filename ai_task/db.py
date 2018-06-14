@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os.path as path
+
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
@@ -12,6 +14,7 @@ from ai_task.config import CONF
 
 __all__ = [
     "init_db",
+    "db",
     "User",
     "Predict",
     "Metric",
@@ -102,7 +105,7 @@ class Metric(db.Model):
 
 def init_db():
 
-    if os.path.exists(CONF.db_path):
+    if path.exists(CONF.db_path):
         print("Use existing database '%s'" % CONF.db_path)
         return
 

@@ -10,6 +10,8 @@ from sklearn.pipeline import make_union
 import pandas as ps
 
 from ai_task.app import app
+from ai_task.classifiers import classifiers
+from ai_task.config import CONF
 import ai_task.db as db
 
 
@@ -24,22 +26,22 @@ def new_user():
     username = request.json.get("username")
     password = request.json.get("password")
 
-    if username is None or password is None:
+    if not username or not password:
         abort(400)  # missing arguments
 
-    if not db.User.query.filter_by(username=username).first():
+    if db.User.query.filter_by(username=username).first():
         abort(400)  # existing user
 
     user = db.User(username="admin")
     user.hash_password("admin")
 
-    db.session.add(user)
-    db.session.commit()
+    db.db.session.add(user)
+    db.db.session.commit()
 
     return jsonify({"username": user.username})
 
 
-@app.route("/api/v1.0/token", methods=["POST"])
+@app.route("/api/v1.0/token")
 def gen_token():
 
     username = request.json.get("username")
@@ -54,7 +56,7 @@ def gen_token():
     return jsonify({"token": token.decode("ascii"), "duration": duration})
 
 
-@app.route("/api/v1.0/predict", methods=["POST"])
+@app.route("/api/v1.0/predict")
 def predict():
 
     token = request.json.get("token")
@@ -70,7 +72,7 @@ def predict():
     if not comment:
         abort(400)
 
-    classify = classifiers.get(CONF.classifier.name)
+    classify = classifiers.get(CONF.classifier_name)
     if not classify:
         abort(400)
 
@@ -80,7 +82,7 @@ def predict():
     p = db.Predict(
         comment=comment, user_id=user.id,
         classifier_id=c.id, **classification)
-    db.session.add(p)
+    db.db.session.add(p)
 
     m = db.Metric.query.first()
     m.num_of_requests += 1
@@ -91,8 +93,8 @@ def predict():
     m.sum_of_insult += p.insult
     m.sum_of_identity_hate += p.identity_hate
 
-    db.session.add(m)
-    db.session.commit()
+    db.db.session.add(m)
+    db.db.session.commit()
 
     return jsonify(classification)
 
@@ -128,5 +130,5 @@ def verify_user(username, password):
 
 
 if __name__ == "__main__":
-    init_db()
+    db.init_db()
     app.run(debug=True)
