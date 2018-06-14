@@ -95,19 +95,13 @@ def predict():
     db.session.add(p)
 
     m = db.session.query(Metric).first()
-    x = m.num_of_requests
     m.num_of_requests += 1
-    y = m.num_of_requests
-    
-    # Yeah, during a time floating calculations error will accumulate, but it
-    # can be solved with background worker which will be periodically calculate
-    # precise values transparently for service.
-    m.avg_of_toxic = (m.avg_of_toxic * x + p.toxic) / y
-    m.avg_of_severe_toxic = (m.avg_of_severe_toxic * x + p.severe_toxic) / y
-    m.avg_of_obscene = (m.avg_of_obscene * x + p.obscene) / y
-    m.avg_of_threat = (m.avg_of_threat * x + p.threat) / y
-    m.avg_of_insult = (m.avg_of_insult * x + p.insult) / y
-    m.avg_of_identity_hate = (m.avg_of_identity_hate * x + p.identity_hate) / y
+    m.sum_of_toxic += p.toxic
+    m.sum_of_severe_toxic += p.severe_toxic
+    m.sum_of_obscene += p.obscene
+    m.sum_of_threat += p.threat
+    m.sum_of_insult += p.insult
+    m.sum_of_identity_hate += p.identity_hate
 
     db.session.add(m)
     db.session.commit()
@@ -120,12 +114,12 @@ def metrics():
     m = db.session.query(Metric).first()
     return jsonify({
         "number of requests": m.num_of_requests,
-        "average of toxic": m.avg_of_toxic,
-        "average of severe_toxic": m.avg_of_severe_toxic,
-        "average of obscene": m.avg_of_obscene,
-        "average of threat": m.avg_of_threat,
-        "average of insult": m.avg_of_insult,
-        "average of identity_hate": m.avg_of_identity_hate,
+        "average of toxic": m.sum_of_toxic / m.num_of_requests,
+        "average of severe_toxic": m.sum_of_severe_toxic / m.num_of_requests,
+        "average of obscene": m.sum_of_obscene / m.num_of_requests,
+        "average of threat": m.sum_of_threat / m.num_of_requests,
+        "average of insult": m.sum_of_insult / m.num_of_requests,
+        "average of identity_hate": m.sum_of_identity_hate / m.num_of_requests,
     })
 
 
@@ -133,12 +127,12 @@ if __name__ == "__main__":
     if not os.path.exists("db.sqlite"):
         db.create_all()
         m = Metric(num_of_requests=0,
-                   avg_of_toxic=0,
-                   avg_of_severe_toxic=0,
-                   avg_of_obscene=0,
-                   avg_of_threat=0,
-                   avg_of_insult=0,
-                   avg_of_identity_hate=0)
+                   sum_of_toxic=0,
+                   sum_of_severe_toxic=0,
+                   sum_of_obscene=0,
+                   sum_of_threat=0,
+                   sum_of_insult=0,
+                   sum_of_identity_hate=0)
         db.session.add(m)
         db.session.commit()
     app.run(debug=True)
