@@ -63,8 +63,9 @@ def gen_token():
     if not user:
         abort(400)
 
-    token = user.generate_auth_token(600)
-    return jsonify({"token": token.decode("ascii"), "duration": "600 sec"})
+    duration = 24 * 60 * 60
+    token = user.generate_auth_token(duration)
+    return jsonify({"token": token.decode("ascii"), "duration": duration})
 
 
 @app.route("/api/v1.0/predict")
