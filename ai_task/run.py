@@ -10,11 +10,7 @@ from sklearn.pipeline import make_union
 import pandas as ps
 
 from ai_task.app import app
-from ai_task.db import db, User, Predict, Metric
-
-
-model_path = path.join(path.dirname(__file__), "model.reg")
-model = pickle.load(open(model_path, "rb"))
+import ai_task.db as db
 
 
 @app.route("/")
@@ -31,10 +27,10 @@ def new_user():
     if username is None or password is None:
         abort(400)  # missing arguments
 
-    if User.query.filter_by(username=username).first() is not None:
+    if not db.User.query.filter_by(username=username).first():
         abort(400)  # existing user
 
-    user = User(username="admin")
+    user = db.User(username="admin")
     user.hash_password("admin")
 
     db.session.add(user)
@@ -49,7 +45,7 @@ def gen_token():
     username = request.json.get("username")
     password = request.json.get("password")
 
-    user = verify_user(username, password)
+    user = db.User.check_creds(username, password)
     if not user:
         abort(400)
 
@@ -58,7 +54,7 @@ def gen_token():
     return jsonify({"token": token.decode("ascii"), "duration": duration})
 
 
-@app.route("/api/v1.0/predict")
+@app.route("/api/v1.0/predict", methods=["POST"])
 def predict():
 
     token = request.json.get("token")
@@ -66,7 +62,7 @@ def predict():
     if not token:
         abort(400)
 
-    user = User.verify_auth_token(token)
+    user = db.User.check_auth_token(token)
     if not user:
         abort(400)
 
@@ -74,11 +70,19 @@ def predict():
     if not comment:
         abort(400)
 
-    classification = classify_comment(comment)
-    p = Predict(comment=comment, user_id=user.id, **classification)
+    classify = classifiers.get(CONF.classifier.name)
+    if not classify:
+        abort(400)
+
+    c = db.Classifier.query.filter_by(name=CONF.classifier_name).first()
+
+    classification = classify(comment)
+    p = db.Predict(
+        comment=comment, user_id=user.id,
+        classifier_id=c.id, **classification)
     db.session.add(p)
 
-    m = Metric.query.first()
+    m = db.Metric.query.first()
     m.num_of_requests += 1
     m.sum_of_toxic += p.toxic
     m.sum_of_severe_toxic += p.severe_toxic
@@ -95,7 +99,7 @@ def predict():
 
 @app.route("/api/v1.0/metrics")
 def metrics():
-    m = Metric.query.first()
+    m = db.Metric.query.first()
 
     if not m.num_of_requests:
         return jsonify({})
@@ -111,22 +115,12 @@ def metrics():
     })
 
 
-def classify_comment(comment):
-    test_text = ps.Series(comment)
-    test_features = model["vectorizer"].transform(test_text)
-
-    result = {}
-    for name, clsfr in model["classifiers"].iteritems():
-        result[name] = clsfr.predict_proba(test_features)[0][1]
-    return result
-
-
 def verify_user(username, password):
 
     if not username or not password:
         return None
 
-    user = User.query.filter_by(username=username).first()
+    user = db.User.query.filter_by(username=username).first()
     if not user or not user.verify_password(password):
         return None
 
@@ -134,15 +128,5 @@ def verify_user(username, password):
 
 
 if __name__ == "__main__":
-    if not os.path.exists("db.sqlite"):
-        db.create_all()
-        m = Metric(num_of_requests=0,
-                   sum_of_toxic=0,
-                   sum_of_severe_toxic=0,
-                   sum_of_obscene=0,
-                   sum_of_threat=0,
-                   sum_of_insult=0,
-                   sum_of_identity_hate=0)
-        db.session.add(m)
-        db.session.commit()
+    init_db()
     app.run(debug=True)
