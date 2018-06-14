@@ -48,7 +48,7 @@ This is a test example how set up web service in order to detect negative publis
     curl -X POST -H "Content-Type: application/json" -d '{"username":"admin", "password":"admin"}' http://127.0.0.1:5000/api/v1.0/token
 
     {
-    "duration": "600 sec",
+    "duration": 86400,
     "token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUyODkyNDk1OSwiaWF0IjoxNTI4OTI0MzU5fQ.eyJpZCI6MX0._ItAFuSfmxvBCI1tOVfwvkyHh9mMiKve3KTcDgcMio4"
     }
     ```
