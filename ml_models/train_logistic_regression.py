@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os.path as path
 import pickle
@@ -13,7 +13,7 @@ from sklearn.pipeline import make_union
 
 cur_dir = path.dirname(__file__)
 model_path = path.normpath(
-    path.join(cur_dir, "../ai_task/classifiers/logistic_regression.mdl"))
+    path.join(cur_dir, "../predict_service/classifiers/logistic_regression.mdl"))
 train_path = path.join(cur_dir, "train_data.csv")
 
 size = 10000

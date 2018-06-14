@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ai_task.classifiers.logistic_regression import classify as lr_classify
+from predict_service.classifiers.logistic_regression import classify as lr_classify
 
 
 __all__ = [
