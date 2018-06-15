@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import cachetools
 from flask import abort, jsonify, make_response, request
 
 from predict_service.app import app
@@ -11,6 +12,7 @@ import predict_service.services as ms
 
 V = "v1.0"
 classify = classifiers[CONF.classifier_name]  # function to classify comment
+ttl_cache = cachetools.TTLCache(100, 60) # cache 100 tokens during 60 sec
 
 
 def reject(error_message, code=400):
@@ -39,9 +41,14 @@ def predict():
     if not token:
         return reject("no token")
 
-    user = ms.check_token(token)
+    user = ttl_cache.get(token)
     if not user:
-        return reject("invalid token")
+        user = ms.check_token(token)
+
+        if not user:
+            return reject("invalid token")
+
+        ttl_cache[token] = user
 
     comment = request.json.get("comment")
     if not comment or not comment.strip():
