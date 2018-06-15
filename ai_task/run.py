@@ -4,9 +4,7 @@ import os
 import os.path as path
 import pickle
 
-from flask import abort, jsonify, request
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import make_union
+from flask import abort, jsonify, make_response, request
 import pandas as ps
 
 from ai_task.app import app
@@ -15,25 +13,47 @@ from ai_task.config import CONF
 import ai_task.db as db
 
 
+V = "v1.0"
+classify = classifiers[CONF.classifier_name]
+
+
+def reject(error_message, code=400):
+    """Wrapper over flask helpers to return wrong response in JSON format.
+    Args:
+        error_message (str): Message explaining error type.
+        code (int): Status code of response.
+    """
+    abort(make_response(jsonify({"error": error_message}), code))
+
+
 @app.route("/")
 def greeting():
+    """Handler to process root request."""
     return jsonify({"greeting": "Hello man!"})
 
 
-@app.route("/api/v1.0/users", methods=["POST"])
-def new_user():
+@app.route("/api/%s/users" % V, methods=["POST"])
+def create_user():
+    """Handler to process user creation request.
 
+    Request options:
+        - username: name of user
+        - password: password of user
+
+    Response data:
+        - username: name of created user
+    """
     username = request.json.get("username")
     password = request.json.get("password")
 
     if not username or not password:
-        abort(400)  # missing arguments
+        return reject("invalid username or password")
 
     if db.User.query.filter_by(username=username).first():
-        abort(400)  # existing user
+        return reject("user already exists")
 
-    user = db.User(username="admin")
-    user.hash_password("admin")
+    user = db.User(username=username)
+    user.hash_password(password)
 
     db.db.session.add(user)
     db.db.session.commit()
@@ -41,40 +61,53 @@ def new_user():
     return jsonify({"username": user.username})
 
 
-@app.route("/api/v1.0/token")
-def gen_token():
+@app.route("/api/%s/tokens" % V, methods=["POST"])
+def create_token():
+    """Handler to process auth token creation.
 
+    Request options:
+        - username: name of user
+        - password: password of user
+
+    Response data:
+        - token: generated auth token
+        - duration: duration of token validity
+    """
     username = request.json.get("username")
     password = request.json.get("password")
 
     user = db.User.check_creds(username, password)
     if not user:
-        abort(400)
+        return reject("invalid username or password")
 
     duration = 24 * 60 * 60
     token = user.generate_auth_token(duration)
     return jsonify({"token": token.decode("ascii"), "duration": duration})
 
 
-@app.route("/api/v1.0/predict")
+@app.route("/api/%s/predict" % V, methods=["POST"])
 def predict():
+    """Handler to process predict request.
 
+    Request options:
+        - token: authentication token
+        - comment: comment for classification
+
+    Response data:
+        weights of categories
+    """
     token = request.json.get("token")
 
     if not token:
-        abort(400)
+        return reject("no token")
 
     user = db.User.check_auth_token(token)
     if not user:
-        abort(400)
+        return reject("token is invalid")
 
     comment = request.json.get("comment")
-    if not comment:
-        abort(400)
-
-    classify = classifiers.get(CONF.classifier_name)
-    if not classify:
-        abort(400)
+    if not comment or not comment.strip():
+        return reject("comment is empty")
 
     c = db.Classifier.query.filter_by(name=CONF.classifier_name).first()
 
@@ -99,8 +132,13 @@ def predict():
     return jsonify(classification)
 
 
-@app.route("/api/v1.0/metrics")
+@app.route("/api/%s/metrics" % V)
 def metrics():
+    """Handler to process metrics request.
+
+    Response data:
+        requests and predicts statistics
+    """
     m = db.Metric.query.first()
 
     if not m.num_of_requests:
@@ -115,18 +153,6 @@ def metrics():
         "average of insult": m.sum_of_insult / m.num_of_requests,
         "average of identity_hate": m.sum_of_identity_hate / m.num_of_requests,
     })
-
-
-def verify_user(username, password):
-
-    if not username or not password:
-        return None
-
-    user = db.User.query.filter_by(username=username).first()
-    if not user or not user.verify_password(password):
-        return None
-
-    return user
 
 
 if __name__ == "__main__":

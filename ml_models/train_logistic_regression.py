@@ -1,5 +1,6 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
+import argparse
 import os.path as path
 import pickle
 
@@ -16,7 +17,11 @@ model_path = path.normpath(
     path.join(cur_dir, "../ai_task/classifiers/logistic_regression.mdl"))
 train_path = path.join(cur_dir, "train_data.csv")
 
-size = 10000
+parser = argparse.ArgumentParser()
+parser.add_argument("--comments-number", type=int)
+args = parser.parse_args()
+
+size = args.comments_number or 10000
 split = lambda seq: seq[:size] if size else seq
 
 class_names = [
