@@ -19,7 +19,7 @@ This is a test example how set up web service in order to detect negative publis
 - Clone repository: `git clone https://github.com/schipiga/ai-task`
 - Go to folder: `cd ai-task`
 - Generate virtual environment: `virtualenv .venv`
-- Activate it: `. ./venv/bin/activate`
+- Activate it: `. .venv/bin/activate`
 - Install dependencies: `pip install -r requirements.txt && pip install -e .`
 
 ## How to launch
@@ -163,7 +163,7 @@ It provides `CLI` options:
 
 ## How to update trained model
 
-- Launch script `python ml_model/train_logistic_regression.py`
+- Launch script `python ml_models/train_logistic_regression.py`
 - Wait for finishing
 
 It provides `CLI` options:

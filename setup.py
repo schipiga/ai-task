@@ -5,5 +5,5 @@ setup(
     version="0.0.1",
     author="Sergei Chipiga",
     author_email="chipiga86@gmail.com",
-    packages=["ai_task"],
+    packages=["predict_service", "user_service"],
 )
