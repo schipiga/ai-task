@@ -12,7 +12,7 @@ import predict_service.services as ms
 
 V = "v1.0"
 classify = classifiers[CONF.classifier_name]  # function to classify comment
-ttl_cache = cachetools.TTLCache(100, 60) # cache 100 tokens during 60 sec
+ttl_cache = cachetools.TTLCache(100, 60)  # cache 100 tokens during 60 sec
 
 
 def reject(error_message, code=400):
