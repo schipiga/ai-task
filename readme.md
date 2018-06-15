@@ -173,7 +173,7 @@ It provides `CLI` options:
 
 - Logging
 - Usage of [Flask-RESTful](https://flask-restful.readthedocs.io/en/latest/)
-- Usage of TTL cache for auth tokens in predict service
+- ~Usage of [TTL cache](http://cachetools.readthedocs.io/en/latest/) for auth tokens in predict service~
 - Migration to [tornado](http://www.tornadoweb.org/en/stable/) server
 - Documentation generating with [sphinx](http://www.sphinx-doc.org/en/master/)
 - Unit tests coverage
